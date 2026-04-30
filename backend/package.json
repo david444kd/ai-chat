@@ -1,8 +1,12 @@
 {
   "name": "backend",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "start": "bun src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "^1.3.13"
   },
