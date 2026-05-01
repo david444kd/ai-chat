@@ -5,7 +5,10 @@ import { chatsApi } from "@/shared/api/chats";
 
 export const chatKeys = {
   all: ["chats"] as const,
-  detail: (id: string) => ["chat", id] as const,
+  lists: () => [...chatKeys.all, "list"] as const,
+  details: () => [...chatKeys.all, "detail"] as const,
+  detail: (id: string) => [...chatKeys.details(), id] as const,
+  messages: (id: string) => [...chatKeys.detail(id), "messages"] as const,
 };
 
 export function useChatsQuery(initialData?: Chat[]) {
@@ -18,7 +21,7 @@ export function useChatsQuery(initialData?: Chat[]) {
 
 export function useChatMessagesQuery(chatId: string | null, initialData?: ChatWithMessages) {
   return useQuery({
-    queryKey: chatKeys.detail(chatId ?? ""),
+    queryKey: chatId ? chatKeys.detail(chatId) : chatKeys.all,
     queryFn: () => chatsApi.getById(chatId!),
     enabled: chatId != null,
     initialData,
@@ -29,8 +32,21 @@ export function useDeleteChatMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => chatsApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
-    onError: () => toast.error("Не удалось удалить чат"),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: chatKeys.all });
+      const previous = queryClient.getQueryData<Chat[]>(chatKeys.all);
+      queryClient.setQueryData<Chat[]>(chatKeys.all, (old) =>
+        old ? old.filter((c) => c.id !== id) : []
+      );
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(chatKeys.all, context.previous);
+      }
+      toast.error("Не удалось удалить чат");
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
   });
 }
 

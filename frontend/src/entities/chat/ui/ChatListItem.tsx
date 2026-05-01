@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { IconButton } from "@/shared/ui/icon-button";
 import type { Chat } from "../model/types";
 
 interface Props {
@@ -41,17 +42,17 @@ export function ChatListItem({ chat, active, onSelect, onDelete }: Props) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button
-            type="button"
+          <IconButton
+            size="sm"
             className={cn(
-              "absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground opacity-0 transition hover:bg-surface-elevated hover:text-foreground group-hover:opacity-100",
+              "absolute right-1 top-1/2 -translate-y-1/2 opacity-0 hover:bg-surface-elevated group-hover:opacity-100",
               active && "opacity-100"
             )}
             onClick={(e) => e.stopPropagation()}
             aria-label="Действия с чатом"
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
-          </button>
+          </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-36">
           <DropdownMenuItem

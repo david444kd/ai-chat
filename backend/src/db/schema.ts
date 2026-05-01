@@ -25,5 +25,7 @@ export function initDB(): void {
   `);
 
   db.run("CREATE INDEX IF NOT EXISTS idx_chats_user_updated ON chats(user_id, updated_at DESC)");
-  db.run("CREATE INDEX IF NOT EXISTS idx_messages_chat_created ON messages(chat_id, created_at ASC)");
+  db.run(
+    "CREATE INDEX IF NOT EXISTS idx_messages_chat_created ON messages(chat_id, created_at ASC)",
+  );
 }

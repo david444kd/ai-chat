@@ -2,6 +2,7 @@
 
 import { PanelLeft, PanelLeftClose } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
+import { IconButton } from "@/shared/ui/icon-button";
 
 interface Props {
   variant: "open" | "close";
@@ -14,16 +15,12 @@ export function SidebarToggle({ variant, onClick, className }: Props) {
   const Icon = variant === "close" ? PanelLeftClose : PanelLeft;
 
   return (
-    <button
-      type="button"
+    <IconButton
       onClick={onClick}
       aria-label={label}
-      className={cn(
-        "grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition hover:bg-sidebar-hover hover:text-foreground",
-        className
-      )}
+      className={cn("hover:bg-sidebar-hover", className)}
     >
       <Icon className="h-[17px] w-[17px]" />
-    </button>
+    </IconButton>
   );
 }

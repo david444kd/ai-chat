@@ -1,5 +1,5 @@
-import Fastify from "fastify";
 import cors from "@fastify/cors";
+import Fastify from "fastify";
 import { initDB } from "./db/schema";
 import { chatsRoutes } from "./routes/chats";
 import { messagesRoutes } from "./routes/messages";

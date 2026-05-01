@@ -8,9 +8,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 bun install          # install dependencies
 bun run dev          # start dev server with hot reload
 bun run start        # start production server
+bun run lint         # check formatting, imports, lint (Biome)
+bun run lint:fix     # auto-fix all safe issues
+bun run format       # format src/ in place
 ```
 
-No test runner is configured. No lint script is defined.
+No test runner is configured.
 
 ## Environment
 
@@ -23,12 +26,14 @@ Fastify + Bun + SQLite backend (no ORM). Entry point is `src/index.ts`, which re
 **Database** (`src/db/`): Bun's built-in `bun:sqlite` driver. `src/db/index.ts` exposes a lazy singleton `getDB()` with WAL mode and foreign keys enabled. Schema is created at startup via `initDB()` in `src/db/schema.ts`. Two tables: `chats` and `messages` (timestamps are Unix ms integers).
 
 **Routes** (`src/routes/`):
-- `chats.ts` — CRUD for chats plus `POST /chats/:id/generate-title`
-- `messages.ts` — `POST /chats/:id/messages` streams an SSE response: saves the user message, calls OpenRouter, streams `delta` events back as tokens arrive, saves the complete assistant message, then emits `done`. Auto-generates a chat title after the first message (non-blocking fire-and-forget).
+- `chats/` — one file per endpoint: `list.ts`, `create.ts`, `get.ts`, `delete.ts`, `generate-title.ts`, assembled in `index.ts`
+- `messages/` — `send.ts` (`POST /chats/:id/messages`) streams an SSE response; assembled in `index.ts`
 
 **Services** (`src/services/`):
-- `openrouter.ts` — wraps the OpenRouter API. `streamCompletion()` is an async generator that parses the SSE stream from OpenRouter and yields string chunks. `completion()` is a non-streaming call used for title generation.
-- `context.ts` — `buildContext()` fetches all messages for a chat. If estimated token count (chars/4) exceeds 3000, it summarizes the older messages with a `completion()` call and keeps only the last 6 messages verbatim, prepending the summary as a system message.
+- `openrouter.ts` — wraps the OpenRouter API. `streamCompletion()` is an async generator that parses the SSE stream from OpenRouter and yields string chunks. `completion()` is a non-streaming call used for title generation. Both calls use `AbortSignal.timeout(30s)`.
+- `context.ts` — `buildContext()` fetches all messages for a chat. If estimated token count exceeds 3000, it summarizes older messages with a `completion()` call and keeps only the last 6 messages verbatim.
+- `messages.ts` — `streamAssistantReply()` contains all business logic for the send-message flow (save user msg, stream from OpenRouter, save assistant msg, fire-and-forget title generation).
+- `title.ts` — `generateTitle()` generates and persists a chat title from the first user message.
 
 **SSE protocol** (client-facing):
 ```

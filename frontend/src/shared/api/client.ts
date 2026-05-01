@@ -37,5 +37,17 @@ export const apiClient = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
     }),
+  put: <T>(path: string, body?: unknown, init?: RequestInit) =>
+    request<T>(path, {
+      method: "PUT",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      ...init,
+    }),
+  patch: <T>(path: string, body?: unknown, init?: RequestInit) =>
+    request<T>(path, {
+      method: "PATCH",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      ...init,
+    }),
   delete: (path: string, init?: RequestInit) => request<void>(path, { method: "DELETE", ...init }),
 };

@@ -1,10 +1,11 @@
 import type { OpenRouterMessage } from "../types";
 
 const BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
+const TIMEOUT_MS = 30_000;
 
 function getHeaders(): Record<string, string> {
   return {
-    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
     "Content-Type": "application/json",
     "HTTP-Referer": process.env.FRONTEND_URL ?? "http://localhost:3001",
   };
@@ -14,15 +15,22 @@ function getModel(): string {
   return process.env.LLM_MODEL ?? "google/gemma-3-27b-it:free";
 }
 
-export async function* streamCompletion(
-  messages: OpenRouterMessage[]
-): AsyncGenerator<string> {
+function getSystemPrompt(): string {
+  return process.env.SYSTEM_PROMPT ?? "You are a helpful assistant.";
+}
+
+function withTimeout(ms: number): AbortSignal {
+  return AbortSignal.timeout(ms);
+}
+
+export async function* streamCompletion(messages: OpenRouterMessage[]): AsyncGenerator<string> {
   const response = await fetch(BASE_URL, {
     method: "POST",
     headers: getHeaders(),
+    signal: withTimeout(TIMEOUT_MS),
     body: JSON.stringify({
       model: getModel(),
-      messages: [{ role: "system", content: "You are a helpful assistant." }, ...messages],
+      messages: [{ role: "system", content: getSystemPrompt() }, ...messages],
       stream: true,
     }),
   });
@@ -32,7 +40,8 @@ export async function* streamCompletion(
     throw new Error(`OpenRouter error ${response.status}: ${text}`);
   }
 
-  const reader = response.body!.getReader();
+  if (!response.body) throw new Error("OpenRouter returned no response body");
+  const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
 
@@ -68,6 +77,7 @@ export async function completion(messages: OpenRouterMessage[]): Promise<string>
   const response = await fetch(BASE_URL, {
     method: "POST",
     headers: getHeaders(),
+    signal: withTimeout(TIMEOUT_MS),
     body: JSON.stringify({
       model: getModel(),
       messages,
@@ -80,7 +90,7 @@ export async function completion(messages: OpenRouterMessage[]): Promise<string>
     throw new Error(`OpenRouter error ${response.status}: ${text}`);
   }
 
-  const data = await response.json() as {
+  const data = (await response.json()) as {
     choices?: { message?: { content?: string } }[];
   };
 

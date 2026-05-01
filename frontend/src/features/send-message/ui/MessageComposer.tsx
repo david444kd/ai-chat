@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Paperclip, Square } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 import { type KeyboardEvent, useState } from "react";
 import { useSendMessage } from "@/shared/hooks/useSendMessage";
 import { cn } from "@/shared/lib/cn";
@@ -56,19 +56,12 @@ export function MessageComposer({ activeChatId }: MessageComposerProps) {
             className="block max-h-48 min-h-[48px] w-full resize-none bg-transparent px-3 py-2.5 text-[15px] leading-6 outline-none placeholder:text-muted-foreground/70 disabled:opacity-60"
             style={{ fieldSizing: "content" } as React.CSSProperties}
           />
-          <div className="flex items-center justify-between px-1.5 pt-1">
-            <button
-              type="button"
-              className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition hover:bg-surface hover:text-foreground"
-              aria-label="Прикрепить файл"
-              disabled={isStreaming}
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
+          <div className="flex items-center justify-end px-1.5 pt-1">
             <button
               type="button"
               onClick={handleSend}
               disabled={!canSend}
+              suppressHydrationWarning
               aria-label={isStreaming ? "Остановить" : "Отправить"}
               className={cn(
                 "grid h-9 w-9 place-items-center rounded-lg transition-all",

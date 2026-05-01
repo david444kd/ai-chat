@@ -43,7 +43,9 @@ export async function* streamMessages(
         try {
           yield JSON.parse(json) as SSEEvent;
         } catch {
-          // skip malformed line
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[sse] malformed line:", json);
+          }
         }
       }
     }

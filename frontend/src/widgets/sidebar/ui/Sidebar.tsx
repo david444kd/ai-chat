@@ -48,7 +48,7 @@ export function Sidebar({ activeChatId }: SidebarProps) {
         type="button"
         onClick={() => setMobileOpen(true)}
         className={cn(
-          "fixed left-3 top-3 z-50 inline-flex h-9 items-center gap-2 rounded-full border border-border/70 bg-surface-elevated/70 px-3 text-xs font-medium text-foreground shadow-(--shadow-md) backdrop-blur transition-all duration-300 hover:border-border-strong hover:bg-surface-elevated md:hidden",
+          "fixed left-3 top-3 z-50 inline-flex h-9 items-center gap-2 rounded-full border border-border/70 bg-surface-elevated/70 px-3 text-xs font-medium text-foreground shadow-[var(--shadow-md)] backdrop-blur transition-all duration-300 hover:border-border-strong hover:bg-surface-elevated md:hidden",
           mobileOpen && "pointer-events-none opacity-0"
         )}
         aria-label="Открыть сайдбар"
@@ -68,7 +68,7 @@ export function Sidebar({ activeChatId }: SidebarProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-3 pb-2 pt-3.5">
             <div className="flex items-center gap-2 px-1">
-              <div className="grid h-7 w-7 place-items-center rounded-md bg-gradient-primary shadow-(--shadow-glow)">
+              <div className="grid h-7 w-7 place-items-center rounded-md bg-gradient-primary shadow-[var(--shadow-glow)]">
                 <Sparkles className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-serif text-[19px] leading-none tracking-tight">Lumen</span>

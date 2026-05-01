@@ -18,6 +18,8 @@ interface StreamingStore {
       >
     >
   ) => void;
+  appendContent: (chunk: string) => void;
+  updateOptimisticMessages: (updater: (msgs: Message[]) => Message[]) => void;
   stopStreaming: () => void;
 }
 
@@ -28,5 +30,8 @@ export const useStreamingStore = create<StreamingStore>((set, get) => ({
   optimisticMessages: [],
 
   setStreaming: (partial) => set(partial),
+  appendContent: (chunk) => set((s) => ({ streamingContent: s.streamingContent + chunk })),
+  updateOptimisticMessages: (updater) =>
+    set((s) => ({ optimisticMessages: updater(s.optimisticMessages) })),
   stopStreaming: () => get().abortController?.abort(),
 }));
