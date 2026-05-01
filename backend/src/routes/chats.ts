@@ -2,46 +2,67 @@ import type { FastifyInstance } from "fastify";
 import { nanoid } from "nanoid";
 import { getDB } from "../db";
 import { completion } from "../services/openrouter";
+import { requireUserId } from "../services/user";
 import type { Chat, Message } from "../types";
 
 export async function chatsRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /api/chats
-  fastify.get("/chats", async (_req, reply) => {
+  fastify.get("/chats", async (req, reply) => {
+    const userId = requireUserId(req, reply);
+    if (!userId) return;
+
     const db = getDB();
     const chats = db
-      .query<Chat, []>(
-        "SELECT id, title, created_at, updated_at FROM chats ORDER BY updated_at DESC"
+      .query<Chat, [string]>(
+        "SELECT id, user_id, title, created_at, updated_at FROM chats WHERE user_id = ? ORDER BY updated_at DESC",
       )
-      .all();
+      .all(userId)
+      .map(({ user_id: _user_id, ...chat }) => chat);
     return reply.send(chats);
   });
 
   // POST /api/chats
-  fastify.post("/chats", async (_req, reply) => {
+  fastify.post("/chats", async (req, reply) => {
+    const userId = requireUserId(req, reply);
+    if (!userId) return;
+
     const db = getDB();
     const id = nanoid();
     const now = Date.now();
 
     db.run(
-      "INSERT INTO chats (id, title, created_at, updated_at) VALUES (?, ?, ?, ?)",
-      [id, "", now, now]
+      "INSERT INTO chats (id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+      [id, userId, "", now, now],
     );
 
     const chat = db
-      .query<Chat, [string]>("SELECT id, title, created_at, updated_at FROM chats WHERE id = ?")
-      .get(id);
+      .query<Chat, [string, string]>(
+        "SELECT id, user_id, title, created_at, updated_at FROM chats WHERE id = ? AND user_id = ?",
+      )
+      .get(id, userId);
 
-    return reply.status(201).send(chat);
+    if (!chat) {
+      return reply.status(500).send({ error: "Failed to create chat" });
+    }
+
+    // do not expose user_id to the client
+    const { user_id: _user_id, ...clientChat } = chat;
+    return reply.status(201).send(clientChat);
   });
 
   // GET /api/chats/:id
   fastify.get<{ Params: { id: string } }>("/chats/:id", async (req, reply) => {
+    const userId = requireUserId(req, reply);
+    if (!userId) return;
+
     const db = getDB();
     const { id } = req.params;
 
     const chat = db
-      .query<Chat, [string]>("SELECT id, title, created_at, updated_at FROM chats WHERE id = ?")
-      .get(id);
+      .query<Chat, [string, string]>(
+        "SELECT id, user_id, title, created_at, updated_at FROM chats WHERE id = ? AND user_id = ?",
+      )
+      .get(id, userId);
 
     if (!chat) {
       return reply.status(404).send({ error: "Chat not found" });
@@ -53,30 +74,44 @@ export async function chatsRoutes(fastify: FastifyInstance): Promise<void> {
       )
       .all(id);
 
-    return reply.send({ ...chat, messages });
+    const { user_id: _user_id, ...clientChat } = chat;
+    return reply.send({ ...clientChat, messages });
   });
 
   // DELETE /api/chats/:id
   fastify.delete<{ Params: { id: string } }>("/chats/:id", async (req, reply) => {
+    const userId = requireUserId(req, reply);
+    if (!userId) return;
+
     const db = getDB();
     const { id } = req.params;
 
     const chat = db
-      .query<Chat, [string]>("SELECT id FROM chats WHERE id = ?")
-      .get(id);
+      .query<Pick<Chat, "id">, [string, string]>("SELECT id FROM chats WHERE id = ? AND user_id = ?")
+      .get(id, userId);
 
     if (!chat) {
       return reply.status(404).send({ error: "Chat not found" });
     }
 
-    db.run("DELETE FROM chats WHERE id = ?", [id]);
+    db.run("DELETE FROM chats WHERE id = ? AND user_id = ?", [id, userId]);
     return reply.status(204).send();
   });
 
   // POST /api/chats/:id/generate-title
   fastify.post<{ Params: { id: string } }>("/chats/:id/generate-title", async (req, reply) => {
+    const userId = requireUserId(req, reply);
+    if (!userId) return;
+
     const db = getDB();
     const { id } = req.params;
+
+    const chat = db
+      .query<Pick<Chat, "id">, [string, string]>("SELECT id FROM chats WHERE id = ? AND user_id = ?")
+      .get(id, userId);
+    if (!chat) {
+      return reply.status(404).send({ error: "Chat not found" });
+    }
 
     const firstMessage = db
       .query<Message, [string]>(
@@ -101,7 +136,12 @@ export async function chatsRoutes(fastify: FastifyInstance): Promise<void> {
       title = firstMessage.content.slice(0, 50);
     }
 
-    db.run("UPDATE chats SET title = ?, updated_at = ? WHERE id = ?", [title, Date.now(), id]);
+    db.run("UPDATE chats SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?", [
+      title,
+      Date.now(),
+      id,
+      userId,
+    ]);
 
     return reply.send({ title });
   });

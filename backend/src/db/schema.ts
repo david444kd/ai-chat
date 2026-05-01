@@ -6,6 +6,7 @@ export function initDB(): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS chats (
       id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
       title TEXT NOT NULL DEFAULT '',
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
@@ -22,4 +23,7 @@ export function initDB(): void {
       FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
     )
   `);
+
+  db.run("CREATE INDEX IF NOT EXISTS idx_chats_user_updated ON chats(user_id, updated_at DESC)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_messages_chat_created ON messages(chat_id, created_at ASC)");
 }

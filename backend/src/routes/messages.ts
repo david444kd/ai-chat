@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { getDB } from "../db";
 import { streamCompletion } from "../services/openrouter";
 import { buildContext } from "../services/context";
+import { requireUserId } from "../services/user";
 import type { Chat, Message } from "../types";
 
 export async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
@@ -23,13 +24,16 @@ export async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
       },
     },
     async (req: FastifyRequest<{ Params: { id: string }; Body: { content: string } }>, reply: FastifyReply) => {
+      const userId = requireUserId(req, reply);
+      if (!userId) return;
+
       const db = getDB();
       const { id } = req.params;
       const { content } = req.body;
 
       const chat = db
-        .query<Chat, [string]>("SELECT id FROM chats WHERE id = ?")
-        .get(id);
+        .query<Pick<Chat, "id">, [string, string]>("SELECT id FROM chats WHERE id = ? AND user_id = ?")
+        .get(id, userId);
 
       if (!chat) {
         return reply.status(404).send({ error: "Chat not found" });
@@ -86,7 +90,7 @@ export async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
 
         // Generate title for first message (non-blocking)
         if (isFirstMessage) {
-          generateTitle(id, content).catch(() => {});
+          generateTitle(userId, id, content).catch(() => {});
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -99,7 +103,7 @@ export async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
   );
 }
 
-async function generateTitle(chatId: string, firstMessage: string): Promise<void> {
+async function generateTitle(userId: string, chatId: string, firstMessage: string): Promise<void> {
   const { completion } = await import("../services/openrouter");
   const db = getDB();
 
@@ -116,5 +120,10 @@ async function generateTitle(chatId: string, firstMessage: string): Promise<void
     title = firstMessage.slice(0, 50);
   }
 
-  db.run("UPDATE chats SET title = ?, updated_at = ? WHERE id = ?", [title, Date.now(), chatId]);
+  db.run("UPDATE chats SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?", [
+    title,
+    Date.now(),
+    chatId,
+    userId,
+  ]);
 }
