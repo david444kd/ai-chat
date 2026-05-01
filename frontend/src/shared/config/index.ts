@@ -1,5 +1,5 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-export const MODEL_NAME = process.env.NEXT_PUBLIC_MODEL_NAME ?? "openai/gpt-oss-120b:free";
+export const MODEL_NAME = process.env.NEXT_PUBLIC_MODEL_NAME ?? "openai/gpt-os...";
 
 export const SUGGESTION_PROMPTS = [
   {

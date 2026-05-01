@@ -8,7 +8,7 @@ interface ChatLayoutProps {
 
 export function ChatLayout({ activeChatId, children }: ChatLayoutProps) {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-background">
       <Sidebar activeChatId={activeChatId} />
       {children}
     </div>

@@ -18,7 +18,7 @@ export function WelcomeScreen({ onPick }: Props) {
         <h1 className="text-center font-serif text-[44px] leading-tight tracking-tight">
           Чем могу <em className="text-gradient">помочь</em> сегодня?
         </h1>
-        <p className="mt-3 text-center text-[14px] text-muted-foreground">
+        <p className="mt-3 text-center text-[15px] text-muted-foreground">
           Задайте вопрос или выберите идею ниже
         </p>
       </div>
@@ -42,8 +42,8 @@ export function WelcomeScreen({ onPick }: Props) {
                 <Icon className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <div className="text-[13.5px] font-medium">{p.title}</div>
-                <div className="mt-0.5 truncate text-[12.5px] text-muted-foreground">
+                <div className="text-[14.5px] font-medium">{p.title}</div>
+                <div className="mt-0.5 truncate text-[13.5px] text-muted-foreground">
                   {p.subtitle}
                 </div>
               </div>

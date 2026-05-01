@@ -44,6 +44,10 @@
 :root {
   --radius: 0.875rem;
 
+  /* Font aliases (don’t rely on Tailwind @theme being resolved at runtime) */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
   --background: oklch(0.18 0.012 60);
   --foreground: oklch(0.96 0.01 80);
 
@@ -120,16 +124,16 @@
     border-color: var(--color-border);
   }
   html {
-    font-size: 17px;
+    font-size: 19px;
   }
   html,
   body {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    line-height: 1.55;
+    font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 575;
+    line-height: 1.62;
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-feature-settings: 'ss01', 'cv11';
+    font-feature-settings: 'ss01', 'cv11', 'ss02';
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
@@ -142,7 +146,7 @@
 
 @layer utilities {
   .font-serif {
-    font-family: var(--font-serif);
+    font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
   }
   .bg-aurora {
     background-image: var(--gradient-aurora);

@@ -53,7 +53,7 @@ export function MessageComposer({ activeChatId }: MessageComposerProps) {
             disabled={isStreaming}
             placeholder={activeChatId ? "Продолжите диалог…" : "Спросите что угодно…"}
             rows={1}
-            className="block max-h-48 min-h-[48px] w-full resize-none bg-transparent px-3 py-2.5 text-[15px] leading-6 outline-none placeholder:text-muted-foreground/70 disabled:opacity-60"
+            className="block max-h-48 min-h-[48px] w-full resize-none bg-transparent px-3 py-2.5 text-[16px] leading-6 outline-none placeholder:text-muted-foreground/70 disabled:opacity-60"
             style={{ fieldSizing: "content" } as React.CSSProperties}
           />
           <div className="flex items-center justify-end px-1.5 pt-1">

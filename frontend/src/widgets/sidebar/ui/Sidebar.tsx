@@ -58,9 +58,20 @@ export function Sidebar({ activeChatId }: SidebarProps) {
         <span>Меню</span>
       </button>
 
+      {/* Mobile backdrop (click outside to close) */}
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Закрыть сайдбар"
+          title="Закрыть сайдбар"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-[1px] md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 h-screen shrink-0 overflow-hidden border-r border-border bg-sidebar transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-auto",
+          "fixed inset-y-0 left-0 z-40 h-[100dvh] shrink-0 overflow-hidden border-r border-border bg-sidebar transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-auto",
           mobileOpen ? "w-[280px]" : "w-0 md:w-[280px]"
         )}
       >

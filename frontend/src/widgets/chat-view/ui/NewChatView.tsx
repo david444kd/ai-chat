@@ -9,7 +9,7 @@ export function NewChatView() {
   const { sendMessage } = useSendMessage(null);
 
   return (
-    <div className="relative flex h-screen flex-1 flex-col bg-background">
+    <div className="relative flex h-[100dvh] flex-1 flex-col bg-background">
       <div className="pointer-events-none absolute inset-0 bg-aurora opacity-90" />
 
       <ChatHeader title="Новый чат" />
